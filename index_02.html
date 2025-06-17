@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yeah Waffle - Order Tracker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fff8f0;
+      margin: 0;
+      padding: 20px;
+    }
+    header {
+      text-align: center;
+      background-color: #ff8c42;
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #ff8c42;
+      color: white;
+    }
+    input, select {
+      padding: 5px;
+      margin: 5px;
+    }
+    button {
+      background-color: #ff8c42;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Yeah Waffle – Order Tracker</h1>
+    <p>Track your daily orders and profit</p>
+  </header>
+
+  <section>
+    <h2>🧇 Add New Order</h2>
+    <select id="item">
+      <option>Oreo Waffle</option>
+      <option>Butter & Honey Waffle</option>
+      <option>Choco Chip Waffle</option>
+      <option>KitKat Waffle</option>
+      <option>Dark Choco Waffle</option>
+      <option>Red Velvet Waffle</option>
+      <option>Dry Fruit Waffle</option>
+    </select>
+    <input type="date" id="date" />
+    <input type="number" id="original" placeholder="Original Price ₹" />
+    <input type="number" id="sold" placeholder="Sold Price ₹" />
+    <button onclick="addOrder()">Add Order</button>
+
+    <table id="orderTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Waffle</th>
+          <th>Original Price</th>
+          <th>Sold Price</th>
+          <th>Profit / Loss</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script>
+    function loadOrders() {
+      const saved = localStorage.getItem("waffleOrders");
+      if (saved) {
+        JSON.parse(saved).forEach(order => insertRow(order));
+      }
+    }
+
+    function saveOrders() {
+      const rows = document.querySelectorAll("#orderTable tbody tr");
+      const data = Array.from(rows).map(row => {
+        const cells = row.querySelectorAll("td");
+        return {
+          date: cells[0].innerText,
+          item: cells[1].innerText,
+          original: Number(cells[2].innerText),
+          sold: Number(cells[3].innerText)
+        };
+      });
+      localStorage.setItem("waffleOrders", JSON.stringify(data));
+    }
+
+    function insertRow({ date, item, original, sold }) {
+      const table = document.getElementById("orderTable").getElementsByTagName("tbody")[0];
+      const row = table.insertRow();
+      const profit = sold - original;
+      row.innerHTML = `
+        <td>${date}</td>
+        <td>${item}</td>
+        <td>${original}</td>
+        <td>${sold}</td>
+        <td style="color: ${profit >= 0 ? 'green' : 'red'}">${profit}</td>
+        <td><button onclick="removeRow(this)">X</button></td>
+      `;
+    }
+
+    function addOrder() {
+      const item = document.getElementById("item").value;
+      const date = document.getElementById("date").value;
+      const original = parseFloat(document.getElementById("original").value);
+      const sold = parseFloat(document.getElementById("sold").value);
+      if (!date || isNaN(original) || isNaN(sold)) return alert("Please fill all fields");
+      insertRow({ date, item, original, sold });
+      saveOrders();
+      document.getElementById("date").value = "";
+      document.getElementById("original").value = "";
+      document.getElementById("sold").value = "";
+    }
+
+    function removeRow(btn) {
+      const row = btn.parentElement.parentElement;
+      row.remove();
+      saveOrders();
+    }
+
+    window.onload = loadOrders;
+  </script>
+</body>
+</html>
